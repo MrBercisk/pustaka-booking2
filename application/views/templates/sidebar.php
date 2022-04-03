@@ -44,7 +44,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link pb-0" href="<?= base_url('buku'); ?>">
-                            <i class="fas fa-book-open"></i>
+                            <i class="fas fa-list-alt"></i>
                                 <span>Data Buku</span></a>
                         </li>
                         <li class="nav-item">
