@@ -6,18 +6,18 @@ class Member extends CI_Controller
     {
         parent::__construct();
     }
-    
+
     public function index()
     {
         $this->_login();
     }
-    
+
     private function _login()
     {
         $email = htmlspecialchars($this->input->post('email', true));
         $password = $this->input->post('password', true);
         $user = $this->ModelUser->cekData(['email' => $email])->row_array();
-        
+
         //jika usernya ada
         if ($user) {
             //jika user sudah aktif
@@ -61,20 +61,34 @@ class Member extends CI_Controller
             'min_length' => 'Password Terlalu Pendek'
         ]);
         $this->form_validation->set_rules('password2', 'Repeat Password', 'required|trim|matches[password1]');
+
         $email = $this->input->post('email', true);
-        $data = [
-            'nama' => htmlspecialchars($this->input->post('nama', true)),
-            'alamat' => htmlspecialchars($this->input->post('alamat', true)),
-            'email' => htmlspecialchars($email),
-            'image' => 'default.jpg',
-            'password' => password_hash($this->input->post('password1'), PASSWORD_DEFAULT),
-            'role_id' => 2,
-            'is_active' => 1,
-            'tanggal_input' => time()
-        ];
-        $this->ModelUser->simpanData($data);
-        $this->session->set_flashdata('pesan', '<div class="alert alert-success alert-message" role="alert">Selamat!! akun anggota anda sudah dibuat.</div>');
-        redirect(base_url());
+        if ($this->form_validation->run() == false) {
+            $data = [
+                'user' => "Pengunjung",
+                'judul' => "Katalog Buku",
+                'buku' => $this->ModelBuku->getBuku()->result(),
+            ];
+            $this->load->view('templates/templates-user/header', $data);
+            $this->load->view('buku/daftarbuku', $data);
+            $this->load->view('templates/templates-user/modal');
+            $this->load->view('templates/templates-user/footer', $data);
+        } else {
+
+            $data = [
+                'nama' => htmlspecialchars($this->input->post('nama', true)),
+                'alamat' => htmlspecialchars($this->input->post('alamat', true)),
+                'email' => htmlspecialchars($email),
+                'image' => 'default.jpg',
+                'password' => password_hash($this->input->post('password1'), PASSWORD_DEFAULT),
+                'role_id' => 2,
+                'is_active' => 1,
+                'tanggal_input' => time()
+            ];
+            $this->ModelUser->simpanData($data);
+            $this->session->set_flashdata('pesan', '<div class="alert alert-success alert-message" role="alert">Selamat!! akun anggota anda sudah dibuat.</div>');
+            redirect(base_url());
+        }
     }
 
     public function myProfil()
@@ -129,13 +143,13 @@ class Member extends CI_Controller
                 $config['file_name'] = 'pro' . time();
                 $this->load->library('upload', $config);
                 if ($this->upload->do_upload('image')) {
-                    $gambar_lama = $data['user']['image'];
+                    $gambar_lama = ['user']['image'];
                     if ($gambar_lama != 'default.jpg') {
                         unlink(FCPATH . 'assets/img/profile/' . $gambar_lama);
                     }
                     $gambar_baru = $this->upload->data('file_name');
                     $this->db->set('image', $gambar_baru);
-                } else {                
+                } else {
                 }
             }
             $this->db->set('nama', $nama);
@@ -153,5 +167,4 @@ class Member extends CI_Controller
         $this->session->set_flashdata('pesan', '<div class="alert alert-success alert-message" role="alert">Anda telah logout!!</div>');
         redirect('home');
     }
-
 }
